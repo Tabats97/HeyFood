@@ -135,7 +135,8 @@ const InfoPizzaHandler = {
                 pizza = bestMatch.target;
             } else {
                 return handlerInput.responseBuilder
-                    .speak('Similarity score is ' + bestMatch.rating + ' The best match pizza is ' + bestMatch.target + '. It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
+                    //.speak('Similarity score is ' + bestMatch.rating + ' The best match pizza is ' + bestMatch.target + '. It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
+                    .speak('It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
                     .reprompt()
                     .getResponse();
             }
@@ -173,7 +174,7 @@ const InfoPizzaHandler = {
             handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
-            .speak('You have added ' + amount + ' ' + pizza + ' to your order queue. Do you want to add something else?').reprompt()
+            .speak('You have added ' + amount + ' ' + pizza + ' to your order queue. Do you want to add anything else?').reprompt()
             .getResponse();
         }
         
@@ -186,7 +187,7 @@ const InfoPizzaHandler = {
             handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
-            .speak('You have added ' + amount + ' ' + pizza + ' to your order. Do you want to add something else?').reprompt()
+            .speak('You have added ' + amount + ' ' + pizza + ' to your order. Do you want to add anything else?').reprompt()
             .getResponse();
             
         }
@@ -224,10 +225,10 @@ const RecapOrderHandler = {
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
         let recap = getRecapMessage()
-        recap = JSON.stringify(infoOrder);
+        //recap = JSON.stringify(infoOrder);
         
         return handlerInput.responseBuilder
-            .speak('You have ordered: \n '+ recap + ' up to now. Do you want to add something else?').reprompt()
+            .speak('You have ordered: \n '+ recap + ' up to now. Do you want to add anything else?').reprompt()
             .getResponse();
     }
 };
@@ -331,8 +332,9 @@ const OrderFinishedHandler = {
         attributes.invalidResponse = 1;
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
-        let recap = getRecapMessage()
-        recap = JSON.stringify(infoOrder);
+        let recap = getRecapMessage();
+        //recap = recap + JSON.stringify(infoOrder) + infoOrder["margherita"] + getRecapMessage(infoOrder);
+  
         
         let total = 0;
         for (const orderedPizza in infoOrder) {
@@ -468,9 +470,11 @@ const ErrorHandler = {
 
 function getRecapMessage() {
     let order = '';
-    for (let [key, value] of infoOrder.entries()){
-        order += value + ' ' + key + ' ';
+
+    for (var key in infoOrder){
+        order += infoOrder[key] + ' ' + key + ' ';
     }
+
     return order;
 }
 
