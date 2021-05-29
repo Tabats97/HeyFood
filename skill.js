@@ -145,7 +145,7 @@ const InfoPizzaHandler = {
             } else {
                 return handlerInput.responseBuilder
                     //.speak('Similarity score is ' + bestMatch.rating + ' The best match pizza is ' + bestMatch.target + '. It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
-                    .speak('It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?' + " " + pizza)
+                    .speak('It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
                     .reprompt()
                     .getResponse();
             }
