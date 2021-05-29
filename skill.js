@@ -14,7 +14,7 @@ const LaunchRequestHandler = {
     },
     handle(handlerInput) {
         const speakOutput = 'Welcome to Hey Food, the takeaway pizza ordering skill! Which pizza would you like to order?';
-        const hint = ' For example you can ask me for a pepperoni pizza with extra cheese, and I will suggest you the most similar pizza available on the menu.'
+        const hint = ' For example you can ask me for a margherita pizza, and I will suggest you the most similar pizza available on the menu.'
         
         // Reset session data
         infoOrder = new Map();
@@ -119,7 +119,7 @@ const InfoPizzaHandler = {
     handle(handlerInput) {
         
         let pizza = handlerInput.requestEnvelope.request.intent.slots.pizza.value;
-        const amount = handlerInput.requestEnvelope.request.intent.slots.amount.value;
+        let amount = handlerInput.requestEnvelope.request.intent.slots.amount.value;
         
         const attributes = handlerInput.attributesManager.getSessionAttributes();
         attributes.invalidResponse = 0;
@@ -128,7 +128,16 @@ const InfoPizzaHandler = {
         
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
-        if (typeof pizza !== 'undefined') {
+        let pizzaUndefined = typeof pizza === 'undefined';
+        
+        // Replacing "tu" food with the number 2
+        if (!pizzaUndefined && pizza.toLowerCase() === 'tu') {
+            pizzaUndefined = true;
+            amount = 'two';
+        }
+        
+        if (!pizzaUndefined) {
+
             // Compute the best match
             const bestMatch = getBestMatch(pizza);
             if (bestMatch.rating >= similarityThr) {
@@ -136,7 +145,7 @@ const InfoPizzaHandler = {
             } else {
                 return handlerInput.responseBuilder
                     //.speak('Similarity score is ' + bestMatch.rating + ' The best match pizza is ' + bestMatch.target + '. It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
-                    .speak('It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
+                    .speak('It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?' + " " + pizza)
                     .reprompt()
                     .getResponse();
             }
@@ -152,7 +161,7 @@ const InfoPizzaHandler = {
                 .getResponse();
         }
         
-        if (typeof amount !== 'undefined' && typeof pizza === 'undefined' && typeof attributes.pizza === 'undefined'){
+        if (typeof amount !== 'undefined' && pizzaUndefined && typeof attributes.pizza === 'undefined'){
             // I didn't understand at all
             attributes.invalidResponse = 0;
             handlerInput.attributesManager.setSessionAttributes(attributes);
@@ -162,7 +171,7 @@ const InfoPizzaHandler = {
             .getResponse();
         }
         
-        if (typeof amount !== 'undefined' && typeof pizza === 'undefined'){
+        if (typeof amount !== 'undefined' && pizzaUndefined){
             // I only have the amount
             
             const pizza = attributes.pizza;
@@ -178,7 +187,7 @@ const InfoPizzaHandler = {
             .getResponse();
         }
         
-        if (typeof amount !== 'undefined' && typeof pizza !== 'undefined'){
+        if (typeof amount !== 'undefined' && !pizzaUndefined){
             // The user asked for {n} {pizza}s
             
             updateNumberOfPizzas(pizza, amount);
