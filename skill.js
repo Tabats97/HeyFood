@@ -18,11 +18,14 @@ const LaunchRequestHandler = {
         
         // Reset session data
         infoOrder = new Map();
+        
         const attributes = handlerInput.attributesManager.getSessionAttributes();
         attributes.confirmationPending = false;
         attributes.finalConfirmPending = false;
+        attributes.invalidResponse = 0;
         attributes.pizza = undefined;
         attributes.amount = undefined;
+        
         handlerInput.attributesManager.setSessionAttributes(attributes);
 
         return handlerInput.responseBuilder
@@ -33,23 +36,80 @@ const LaunchRequestHandler = {
     }
 };
 
+
 const pizzaIngredients = {
-    neapolitan: ['tomato', 'mozzarella cheese'],
-    pepperoni: ['tomato', 'cheese', 'pepperoni'],
-    diavola: ['tomato', 'cheese', 'pepperoni'],
-    margherita: ['tomato', 'mozzarella cheese', 'fresh basil'],
-    cheese: ['mozzarella', 'provolone'],
-    'quattro formaggi': ['tomato', 'mozzarella', 'parmigiano reggiano', 'fontina']
+    
+    // pizze rosse 
+    marinara : ['tomato sauce', 'garlic', 'origan'],
+    margherita: ['tomato sauce', 'mozzarella cheese', 'fresh basil'],
+    bufala: ['tomato sauce', 'bufala cheese'],
+    diavola: ['tomato sauce', 'mozzarella cheese', 'pepperoni'],
+    napoli : ['tomato sauce', 'mozzarella cheese', 'anchovies'],
+    americana: ['tomato sauce', 'mozzarella cheese', 'fridge chips','wurstel'],
+    
+    //pizze bianche
+    boscaiola: ['mozzarella cheese', 'mushrooms', 'sausage'],
+    ortolana: ['mozzarella cheese', 'pepper', 'eggplant', 'zucchini'],
+    crostino: ['mozzarella cheese', 'backed ham'],
+    'quattro formaggi': ['mozzarella', 'parmigiano reggiano', 'fontina'],
+    'friarielli salsiccia': ['mozzarella cheese', 'broccoli', 'sausage'],
+    patate: ['mozzarella cheese', 'potatoe'],
+    
+    //focaccie
+    'focaccia bianca': ['oil','rosemary'],
+    'focaccia caprese': ['mozzarella cheese', 'tomato', 'fresh basil'],
+    
+    //calzoni
+    'calzone cotto mozzarella': ['mozzarella cheese', 'backed ham'],
+    'calzone pomodoro mozzarella': ['mozzarella cheese', 'tomato sauce']
+    
 }
 
 const pizzas = {
-    neapolitan: { ingredients: pizzaIngredients['neapolitan'], price: 10 },
-    pepperoni: { ingredients: pizzaIngredients['pepperoni'], price: 12 },
-    diavola: { ingredients: pizzaIngredients['diavola'], price: 12 },
-    margherita: { ingredients: pizzaIngredients['margherita'], price: 8 },
-    cheese: { ingredients: pizzaIngredients['cheese'], price: 11 },
-    'quattro formaggi': { ingredients: pizzaIngredients['quattro formaggi'], price: 14 },
+    
+    marinara: { ingredients: pizzaIngredients['marinara'], price: 4},
+    margherita : {ingredients: pizzaIngredients['margherita'], price: 5},
+    bufala : {ingredients: pizzaIngredients['bufala'], price: 7},
+    diavola: { ingredients: pizzaIngredients['diavola'], price: 6 },
+    napoli: { ingredients: pizzaIngredients['napoli'], price: 6 },
+    americana: { ingredients: pizzaIngredients['americana'], price: 7},
+    
+    boscaiola: { ingredients: pizzaIngredients['boscaiola'], price: 7},
+    ortolana: { ingredients: pizzaIngredients['ortolana'], price: 6},
+    crostino: { ingredients: pizzaIngredients['crostino'], price: 6},
+    'quattro formaggi': { ingredients: pizzaIngredients['quattro formaggi'], price: 6},
+    'friarielli salsiccia': { ingredients: pizzaIngredients['friarielli salsiccia'], price: 6},
+    patate: { ingredients: pizzaIngredients['patate'], price: 5},
+    
+    'focaccia bianca': { ingredients: pizzaIngredients['focaccia bianca'], price: 4},
+    'focaccia caprese': { ingredients: pizzaIngredients['focaccia caprese'], price: 6},
+    
+    'calzone cotto mozzarella': { ingredients: pizzaIngredients['calzone cotto mozzarella'], price: 6},
+    'calzone pomodoro mozzarella': { ingredients: pizzaIngredients['calzone pomodoro mozzarella'], price: 6}
+    
 }
+
+
+const ingredients = [
+    'mozzarella cheese','bufala cheese','parmigiano reggiano', 'fontina','backed ham', 'oil','rosemary',
+    'potatoe','broccoli', 'pepper', 'eggplant', 'zucchini','pepperoni', 'anchovies', 'mushrooms','fridge chips',
+    'wurstel', 'sausage','tomato sauce', 'garlic', 'origan','fresh basil'
+]
+
+const upsell = {
+    
+    suppli: {portion:1, metrics:"pieces", price: 1},
+    'crocchetta di patate': {portion:2, metrics:"pieces", price: 1},
+    'olive ascolane': {portion:5, metrics:"pieces", price:1},
+    
+    'coca cola bottle': {portion:1.5, metrics:"lt", price:2},
+    'fanta bottle': {portion:1.5, metrics:"lt", price:2},
+    'sprite bottle': {portion:1.5, metrics:"lt", price:2},
+    'water bottle': {portion:1.5, metrics:"lt", price:2}
+    
+}
+
+
 
 const InfoPizzaHandler = {
     canHandle(handlerInput) {
@@ -60,10 +120,12 @@ const InfoPizzaHandler = {
         
         let pizza = handlerInput.requestEnvelope.request.intent.slots.pizza.value;
         const amount = handlerInput.requestEnvelope.request.intent.slots.amount.value;
-        const attributes = handlerInput.attributesManager.getSessionAttributes();
         
+        const attributes = handlerInput.attributesManager.getSessionAttributes();
+        attributes.invalidResponse = 0;
         attributes.confirmationPending = false;
         attributes.amount = amount;
+        
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
         if (typeof pizza !== 'undefined') {
@@ -73,14 +135,16 @@ const InfoPizzaHandler = {
                 pizza = bestMatch.target;
             } else {
                 return handlerInput.responseBuilder
-                    .speak('Similarity score is ' + bestMatch.rating + '. It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
+                    .speak('Similarity score is ' + bestMatch.rating + ' The best match pizza is ' + bestMatch.target + '. It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
                     .reprompt()
                     .getResponse();
             }
             
             attributes.confirmationPending = true;
             attributes.pizza = pizza;
+            attributes.invalidResponse = 1;
             handlerInput.attributesManager.setSessionAttributes(attributes);
+            
             return handlerInput.responseBuilder
                 .speak('I found ' + bestMatch.target + ' pizza. Its ingredients are: ' + pizzaIngredients[bestMatch.target].join(', ') + '. Is that okay?')
                 .reprompt()
@@ -89,6 +153,8 @@ const InfoPizzaHandler = {
         
         if (typeof amount !== 'undefined' && typeof pizza === 'undefined' && typeof attributes.pizza === 'undefined'){
             // I didn't understand at all
+            attributes.invalidResponse = 0;
+            handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
             .speak('Sorry I did not quite get it. Which pizza do you want to order?').reprompt()
@@ -103,6 +169,8 @@ const InfoPizzaHandler = {
             
             attributes.pizza = undefined;
             attributes.amount = undefined;
+            attributes.invalidResponse = 1;
+            handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
             .speak('You have added ' + amount + ' ' + pizza + ' to your order queue. Do you want to add something else?').reprompt()
@@ -114,14 +182,18 @@ const InfoPizzaHandler = {
             
             updateNumberOfPizzas(pizza, amount);
             
+            attributes.invalidResponse = 1;
+            handlerInput.attributesManager.setSessionAttributes(attributes);
+            
             return handlerInput.responseBuilder
-            .speak('Ysou have added ' + amount + ' ' + pizza + ' to your order. Do you want to add something else?').reprompt()
+            .speak('You have added ' + amount + ' ' + pizza + ' to your order. Do you want to add something else?').reprompt()
             .getResponse();
             
         }
         
         // I only have the type of pizza
         attributes.pizza = pizza;
+        attributes.invalidResponse = 2;
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
         return handlerInput.responseBuilder.speak('How many ' + pizza + ' do you want?').reprompt().getResponse();
@@ -136,19 +208,26 @@ const RecapOrderHandler = {
     },
     handle(handlerInput){
         
-        if (infoOrder.size === 0){
+        const attributes = handlerInput.attributesManager.getSessionAttributes();
+        
+        if (getMapSize(infoOrder) === 0){
+            
+            attributes.invalidResponse = 0;
+            handlerInput.attributesManager.setSessionAttributes(attributes);
+            
             return handlerInput.responseBuilder
                 .speak('Your order is empty. Which pizza would you like to order?').reprompt()
                 .getResponse();
         }
         
-        let order = '';
-        for (let [key, value] of infoOrder.entries()){
-            order += value + ' ' + key + ' ';
-        }
+        attributes.invalidResponse = 1;
+        handlerInput.attributesManager.setSessionAttributes(attributes);
+        
+        let recap = getRecapMessage()
+        recap = JSON.stringify(infoOrder);
         
         return handlerInput.responseBuilder
-            .speak('You have ordered: \n '+ order + ' up to now. Do you want to add something else?').reprompt()
+            .speak('You have ordered: \n '+ recap + ' up to now. Do you want to add something else?').reprompt()
             .getResponse();
     }
 };
@@ -175,19 +254,26 @@ const BackToThePizzaHandler = {
                 const before = ' , before: ' + JSON.stringify(infoOrder) + ' ' + infoOrder.has(attributes.pizza);
                 updateNumberOfPizzas(attributes.pizza, attributes.amount);
                 const after = attributes.amount + ' ' + attributes.pizza +' , after: ' + JSON.stringify(infoOrder);
-                //const res = before + ' ' + after + ', You have added ' + attributes.amount + ' ' + attributes.pizza + ' to your order. Do you want to add something else?'
                 const res = 'You have added ' + attributes.amount + ' ' + attributes.pizza + ' to your order. Do you want to add something else?'
+                
                 attributes.pizza = undefined;
                 attributes.amount = undefined;
+                attributes.invalidResponse = 1;
                 handlerInput.attributesManager.setSessionAttributes(attributes);
+                
                 return handlerInput.responseBuilder
                     .speak(res).reprompt()
                     .getResponse();
             } else {
                 // Ask for amount
+                attributes.invalidResponse = 2;
+                handlerInput.attributesManager.setSessionAttributes(attributes);
                 return handlerInput.responseBuilder.speak('How many ' + attributes.pizza + ' do you want?').reprompt().getResponse();
             }
         }
+        attributes.invalidResponse = 0;
+        handlerInput.attributesManager.setSessionAttributes(attributes);
+        
         return handlerInput.responseBuilder
             //.speak(JSON.stringify(infoOrder) + ' ' + attributes.pizza + ' ' + attributes.amount + ' Which pizza would you like to add?').reprompt()
             .speak('Which pizza would you like to add?').reprompt()
@@ -202,19 +288,24 @@ const OrderFinishedHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'OrderFinished';
     },
     handle(handlerInput) {
+        
         const attributes = handlerInput.attributesManager.getSessionAttributes();
         
         if (attributes.finalConfirmPending) {
             // User says no after final confirm is pending
-            const speakOutput = 'Welcome to Hey Food, the takeaway pizza ordering skill! Which pizza would you like to order?';
+            
+            const speakOutput = 'Ok let\'s start over! Which pizza would you like to order?';
             
             // Reset session data
             infoOrder = new Map();
             const attributes = handlerInput.attributesManager.getSessionAttributes();
+            
             attributes.confirmationPending = false;
             attributes.finalConfirmPending = false;
             attributes.pizza = undefined;
             attributes.amount = undefined;
+            attributes.invalidResponse = 0;
+            
             handlerInput.attributesManager.setSessionAttributes(attributes);
     
             return handlerInput.responseBuilder
@@ -226,7 +317,10 @@ const OrderFinishedHandler = {
         }
         
         if (attributes.confirmationPending) {
+            
             attributes.confirmationPending = false;
+            attributes.invalidResponse = 0;
+            handlerInput.attributesManager.setSessionAttributes(attributes);
             return handlerInput.responseBuilder
                 .speak('Which pizza would you like to order? If you want to complete the order say no.')
                 .reprompt('Which pizza would you like to order? If you want to complete the order say no.')
@@ -234,6 +328,7 @@ const OrderFinishedHandler = {
         }        
         
         attributes.finalConfirmPending = true;
+        attributes.invalidResponse = 1;
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
         let recap = getRecapMessage()
@@ -244,8 +339,9 @@ const OrderFinishedHandler = {
             const quantity = infoOrder[orderedPizza];
             total += pizzas[orderedPizza].price * quantity;
         }
-    
+        
         const msg = 'Perfect, your order is ' + total + ' euros. You ordered ' + recap + '. Is the order correct? Otherwise you can start over saying "no".';
+        
         return handlerInput.responseBuilder
             .speak(msg)
             .reprompt()
@@ -294,11 +390,25 @@ const FallbackIntentHandler = {
             && Alexa.getIntentName(handlerInput.requestEnvelope) === 'AMAZON.FallbackIntent';
     },
     handle(handlerInput) {
-        const speakOutput = 'Sorry, I don\'t know about that. Please try again.';
-
+        
+        const attributes = handlerInput.attributesManager.getSessionAttributes();
+        let speakOutput;
+        
+        switch(attributes.invalidResponse){
+            case 0:
+                speakOutput = 'Sorry, try with "I want" or "I would like" and the pizza that you want';
+                break;
+            
+            case 1:
+                speakOutput = 'Sorry, try with "yes" or "no"';
+                break;
+            
+            case 2:
+                speakOutput = 'Sorry, try with a number';
+        }
+        
         return handlerInput.responseBuilder
-            .speak(speakOutput)
-            .reprompt(speakOutput)
+            .speak(speakOutput).reprompt()
             .getResponse();
     }
 };
@@ -384,6 +494,15 @@ function getBestMatch(pizza) {
     const availablePizzas = Object.keys(pizzaIngredients)
     const matches = stringSimilarity.findBestMatch(pizza, availablePizzas);
     return matches.bestMatch;
+}
+
+function getMapSize(x) {
+    var len = 0;
+    for (var count in x) {
+            len++;
+    }
+
+    return len;
 }
 
 /**
