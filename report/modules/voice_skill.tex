@@ -1,22 +1,22 @@
 \section{Hey Food skill}
 The end goal of the project was to develop a working voice chatbot.
-We decided to implement it as an Alexa skill. We took the interaction model designed during prototyping and brought it to life. The skill allows the user to make an order by selecting pizzas and amounts for every selection. It offers ways to recap the order and let users to confirm or reject actions.
+We decided to implement it as an Alexa skill. We took the interaction model designed during prototyping and brought it to life. The skill allows the user to make an order by selecting pizzas and amounts for every selection. It offers ways to recap the order and lets users confirm or reject actions.
 
 \subsection{Implementation details}
 
-To start the skill, the user needs to trigger it with the key words "Hey Food" (e.g. "Alexa open Hey Food").
-From this point, the user is guided step by step  by the skill. If the user uses an invalid response during the conversation flow, the skill explains to the user how to interact with it according to the order placement phase in which she/he is.
-The whole conversation is based on the usage of some trigger/key words by the user that explain her/his intent. Each possible intent in the conversation is code-handled by a specific lambda function. 
+To start the skill, the user needs to trigger it with the keywords "Hey Food" (e.g. "Alexa open Hey Food").
+From this point, the user is guided step by step by the skill. If the user uses an invalid response during the conversation flow, the skill explains to the user how to interact with it according to the order placement phase in which she/he is.
+The whole conversation is based on the usage of some trigger/keywords by the user that explain her/his intent. Each possible intent in the conversation is code-handled by a specific lambda function. 
 
 All the handlers (lambda functions) defined in the skill are briefly described below:
 
 \begin{itemize}
 
     \item \textbf{LaunchRequestHandler}: it captures the invocation sentence that launches the skill.
-    \item \textbf{InfoPizzaHandler}: it's the most important handler. It's responsible for all the information related to the order such as the type and the amount of pizzas that a user wants to. It implements the searching mechanism for the most similar item in the menu when the user's choice is not present in it. We made several tests in order to find the most suitable similarity threshold for our purpose. We ended with a value of .33 
+    \item \textbf{InfoPizzaHandler}: it's the most important handler. It's responsible for all the information related to the order, such as the type and the amount of pizzas that a user wants. It implements the searching mechanism for the most similar item in the menu when the user's choice is not present in it. We made several tests in order to find the most suitable similarity threshold for our purpose. We ended with a value of .33.
     \item \textbf{RecapOrderHandler}: this handler recaps the status of the order when the user asks for it.
     \item \textbf{BackToThePizzaHandler}: it asks for which pizza the user wants to add to the order.
-    \item \textbf{OrderFinishedHandler}: it manages the case in which the user needs to restart the order from scratch. It's also responsible for the case in which the user doesn't want to add anything else and a confirmation from the user is needed in order to submit the order.
-    \item \textbf{AMAZON.FallbackIntent}: this built-in handler has been modified according our purposes. This handler tells user how to interact with the skill when she/he provides an invalid response.
+    \item \textbf{OrderFinishedHandler}: it manages the case in which the user needs to restart the order from scratch. It's also responsible for the case in which the user doesn't want to add anything else and, a confirmation from the user is needed in order to submit the order.
+    \item \textbf{AMAZON.FallbackIntent}: this built-in handler has been modified according to our needs. This handler tells the user how to interact with the skill when she/he provides an invalid response.
     
 \end{itemize}

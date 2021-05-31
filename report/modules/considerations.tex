@@ -1,22 +1,22 @@
 \section{Considerations and review of our initial idea}
 
-The analysis conducted so far points out the need to avoid any type of error during the order placement process. We have seen in some interviews that this aspect it's the reason why a customer uses a certain service rather than another. For this reason, it's important to have a feedback mechanism from the voice chatbot after each key passage (e.g. a new pizza added to the order) of the conversation; in this way the user is always in control and knows exactly which is the state of the order and how to proceed in every situation. 
-On the other hand, the conversation must always be fluent and as natural as possible, so that's why the feedback mechanism is used only after a key passage. For the same reason it's impossible for the voice chatbot to list to the user each menu item. In order to manage this problem we are going to adopt this mechanism:
+The analysis conducted so far points out the need to avoid any type of error during the order placement process. We have seen in some interviews that this aspect is the reason why a customer uses a certain service rather than another. For this reason, it's important to have a feedback mechanism from the voice chatbot after each key passage (e.g. a new pizza added to the order) of the conversation; this way, the user is always in control and knows exactly which is the state of the order and how to proceed in every situation. 
+On the other hand, the conversation must always be fluent and as natural as possible, so that's why the feedback mechanism is used only after a key passage. For the same reason, it's impossible for the voice chatbot to list to the user each menu item. In order to manage this problem, we are going to adopt this mechanism:
 
 \begin{itemize}
 
 \item If the user's choice is in the menu, the system returns the corresponding item in the menu.
-\item Otherwise for each element in the menu a similarity value with respect to the user's choice is computed. If the best match is above a certain similarity threshold then the system returns the best match and the user can accept it or not; otherwise it tells user that it's not possible to proceed with that choice. 
+\item Otherwise, for each element in the menu, a similarity value with respect to the user's choice is computed. If the best match is above a certain similarity threshold, then the system returns the best match and, the user can accept it or not; otherwise, it tells the user that it's not possible to proceed with that choice. 
 
 \end{itemize}
 
-We decided to focus deeply on these aspects in order to attract as many users as possible, so we are going to modify our initial idea. The voice service will enable the user to order takeaway pizza from a specific restaurant. We are not going to consider all secondary aspects of an order such as the payment, the pick-up time and so on. The definitive functionalities that we are going to implement in our service are:
+We decided to focus deeply on these aspects in order to attract as many users as possible, so we are going to modify our initial idea. The voice service will enable the user to order takeaway pizza from a specific restaurant. We are not going to consider all secondary aspects of an order such as the payment, the pick-up time, etc. The definitive functionalities that we are going to implement in our service are:
 
 \begin{itemize}
 
 \item The system should act as a waiter.
 \item The system guides the user step by step in the order placement process
-\item The system is able to create an order from scratch. The user can't modify or delete the order and if the order is not correct, he/she has to start over from scratch.
+\item The system is able to create an order from scratch. The user can't modify or delete the order and, if the order is not correct, he/she has to start over from scratch.
 \item The system manages the order placement process following the mechanisms described above.
 
 \end{itemize}
