@@ -20,3 +20,18 @@ All the handlers (lambda functions) defined in the skill are briefly described b
     \item \textbf{AMAZON.FallbackIntent}: this built-in handler has been modified according to our needs. This handler tells the user how to interact with the skill when she/he provides an invalid response.
     
 \end{itemize}
+
+\subsection{Tests with users}
+
+The Alexa skill was iteratively tested on users during development. This was done to make
+sure that the interaction would have flowed seamlessly and that the skill could have
+expected many possible user requests. Since we already had tested the prototype with the
+Wizard of Oz approach, we had previously found many mismatches between the expectations
+of the skill and those of the users. So, those were solved even before starting to develop
+the actual skill. However, after testing the voice skill with many people, it turned out
+that different people had different approaches in several steps of the interaction. For
+instance, some people used different ways of saying, such as ordering a pizza by
+with "I would like to order a ..." instead of only saying the name of the pizza.
+Therefore, we instructed the skill to expect several colloquialisms. We also gave more
+flexibility in the combination of pizza name and quantity of pizzas, making it possible
+to say the number of the desired pizza type together with its name.
