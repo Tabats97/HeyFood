@@ -9,11 +9,11 @@ A simple Alexa food ordering skill developed using Node.js. To use it, create an
     ├── report/                  # Report directory
     │   ├── HEY FOOD MENU.pdf    # Example of a restaurant menu
     │   ├── hey_food.pdf         # Actual project report
-    │   └── hey_food.tex         # Main report source file
-    │   └── images/              # Images used for the report
-    │   └── modules/             # Modules of the report
-    ├── README.md                # This file
-    ├── skill.js                 # Alexa skill source code
+    │   └── hey_food.tex
+    │   └── images/
+    │   └── modules/
+    ├── README.md
+    ├── skill/                   # Alexa skill source code
     
 ### Contributors (alfabetical order)
 
