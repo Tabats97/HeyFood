@@ -1,6 +1,6 @@
 # HeyFood
 
-A simple Alexa food ordering skill developed using Node.js. To use it, create an account in [Alexa Developer Console](https://developer.amazon.com/alexa) and import the `skill.js` file. Enjoy your dinner!
+A simple Alexa food ordering skill developed using Node.js. To use it, create an account in [Alexa Developer Console](https://developer.amazon.com/alexa) and import the `skill` directory. Enjoy your dinner!
 
 ## Project structure
 
