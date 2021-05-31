@@ -1,41 +1,15 @@
-/* *
- * This sample demonstrates handling intents from an Alexa skill using the Alexa Skills Kit SDK (v2).
- * Please visit https://alexa.design/cookbook for additional examples on implementing slots, dialog management,
- * session persistence, api calls, and more.
- * */
+
+/* HET FOOD - HCIW Project 2021*/
+/* Made by leonardo emili, alessio luciani, andrea trianni, matteo pascolini */
+
 const Alexa = require('ask-sdk-core');
 const stringSimilarity = require("string-similarity");
+
 let infoOrder = new Map();
 const similarityThr = 0.33;
 
-const LaunchRequestHandler = {
-    canHandle(handlerInput) {
-        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
-    },
-    handle(handlerInput) {
-        const speakOutput = 'Welcome to Hey Food, the takeaway pizza ordering skill! Which pizza would you like to order?';
-        const hint = ' For example you can ask me for a margherita pizza, and I will suggest you the most similar pizza available on the menu.'
-        
-        // Reset session data
-        infoOrder = new Map();
-        
-        const attributes = handlerInput.attributesManager.getSessionAttributes();
-        attributes.confirmationPending = false;
-        attributes.finalConfirmPending = false;
-        attributes.invalidResponse = 0;
-        attributes.pizza = undefined;
-        attributes.amount = undefined;
-        
-        handlerInput.attributesManager.setSessionAttributes(attributes);
 
-        return handlerInput.responseBuilder
-            //.speak(JSON.stringify(infoOrder) + ' ' + speakOutput + hint)
-            .speak(speakOutput + hint)
-            .reprompt(speakOutput)
-            .getResponse();
-    }
-};
-
+/* -----------------------  MENU declaration  --------------------- */
 
 const pizzaIngredients = {
     
@@ -90,26 +64,77 @@ const pizzas = {
 }
 
 
-const ingredients = [
-    'mozzarella cheese','bufala cheese','parmigiano reggiano', 'fontina','backed ham', 'oil','rosemary',
-    'potatoe','broccoli', 'pepper', 'eggplant', 'zucchini','pepperoni', 'anchovies', 'mushrooms','fridge chips',
-    'wurstel', 'sausage','tomato sauce', 'garlic', 'origan','fresh basil'
-]
-
-const upsell = {
-    
-    suppli: {portion:1, metrics:"pieces", price: 1},
-    'crocchetta di patate': {portion:2, metrics:"pieces", price: 1},
-    'olive ascolane': {portion:5, metrics:"pieces", price:1},
-    
-    'coca cola bottle': {portion:1.5, metrics:"lt", price:2},
-    'fanta bottle': {portion:1.5, metrics:"lt", price:2},
-    'sprite bottle': {portion:1.5, metrics:"lt", price:2},
-    'water bottle': {portion:1.5, metrics:"lt", price:2}
-    
-}
+/* ----------------------------------------------------------------------------------- */
 
 
+
+/* --- Launch INTENT --- */
+
+const launchAnswer = [
+    "Welcome to Hey Food, the takeaway pizza ordering skill! Which pizza would you like to order?",
+    "Hi, my name is Hey Food, I'm here to take your pizza order, what do you want to eat today?",
+    "Hi, I'm hey food, your smart waiter, what would you like to order? "
+    ]
+
+const LaunchRequestHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'LaunchRequest';
+    },
+    handle(handlerInput) {
+
+        // Reset session data
+        infoOrder = new Map();
+        
+        const attributes = handlerInput.attributesManager.getSessionAttributes();
+        attributes.confirmationPending = false;
+        attributes.finalConfirmPending = false;
+        attributes.invalidResponse = 0;
+        attributes.pizza = undefined;
+        attributes.amount = undefined;
+        
+        handlerInput.attributesManager.setSessionAttributes(attributes);
+
+        var answer = selectAnswer(launchAnswer,[])
+        return handlerInput.responseBuilder
+            .speak(answer)
+            .reprompt(answer)
+            .getResponse();
+    }
+};
+
+
+
+/* --- InfoPizza INTENT --- */
+
+const infoAnswerBad = [
+    "It seems like we don\'t have in the menù what you\'re looking for. Which pizza do you want to order?",
+    "I'm sorry but we don't have this product in the menù, if you want you can order something else, tell me what you want.",
+    "We cannot satisfy you with this request, choose another pizza that is into the menù. What would you like? "
+    ]
+
+const infoAnswerFound = [
+    "We have***pizza. Its ingredients are:***. Is that okay?",
+    "Ok,***pizza is in our menù. Did i get it right? ",
+    "Great choice, our***pizza is delicious, so do you confirm?"
+    ]
+
+const infoAnswerNotUnd = [
+    "Sorry I did not quite get it. Which pizza do you want to order?",
+    "Sorry, i haven't heard you very well, can you repeat which pizza do you want, please?",
+    "Ok, i have understand only***pizzas, but what kind of pizza do you want?"
+    ]
+    
+const infoAnswerAdded = [
+    "You have added*** ***to your order queue. Do you want to add anything else?",
+    "Ok, i have written*** *** to your order. Do you want order other pizzas?",
+    "OK,*** ***. Something else?"
+    ]
+    
+const infoAnswerQuantity = [
+    'How many***do you want?',
+    "How many***i have to write down?",
+    "Perfect, how many***?"
+    ]
 
 const InfoPizzaHandler = {
     canHandle(handlerInput) {
@@ -133,7 +158,7 @@ const InfoPizzaHandler = {
         // Replacing "tu" food with the number 2
         if (!pizzaUndefined && pizza.toLowerCase() === 'tu') {
             pizzaUndefined = true;
-            amount = 'two';
+            amount = '2';
         }
         
         if (!pizzaUndefined) {
@@ -144,8 +169,7 @@ const InfoPizzaHandler = {
                 pizza = bestMatch.target;
             } else {
                 return handlerInput.responseBuilder
-                    //.speak('Similarity score is ' + bestMatch.rating + ' The best match pizza is ' + bestMatch.target + '. It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
-                    .speak('It seems like we don\'t have what you\'re looking for. Which pizza do you want to order?')
+                    .speak(selectAnswer(infoAnswerBad,[]))
                     .reprompt()
                     .getResponse();
             }
@@ -156,7 +180,7 @@ const InfoPizzaHandler = {
             handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
-                .speak('I found ' + bestMatch.target + ' pizza. Its ingredients are: ' + pizzaIngredients[bestMatch.target].join(', ') + '. Is that okay?')
+                .speak(selectAnswer(infoAnswerFound,[bestMatch.target, pizzaIngredients[bestMatch.target].join(', ')]))
                 .reprompt()
                 .getResponse();
         }
@@ -167,7 +191,7 @@ const InfoPizzaHandler = {
             handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
-            .speak('Sorry I did not quite get it. Which pizza do you want to order?').reprompt()
+            .speak(selectAnswer(infoAnswerNotUnd,[amount])).reprompt()
             .getResponse();
         }
         
@@ -183,7 +207,7 @@ const InfoPizzaHandler = {
             handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
-            .speak('You have added ' + amount + ' ' + pizza + ' to your order queue. Do you want to add anything else?').reprompt()
+            .speak(selectAnswer(infoAnswerAdded,[amount,pizza])).reprompt()
             .getResponse();
         }
         
@@ -196,7 +220,7 @@ const InfoPizzaHandler = {
             handlerInput.attributesManager.setSessionAttributes(attributes);
             
             return handlerInput.responseBuilder
-            .speak('You have added ' + amount + ' ' + pizza + ' to your order. Do you want to add anything else?').reprompt()
+            .speak(selectAnswer(infoAnswerAdded,[amount,pizza])).reprompt()
             .getResponse();
             
         }
@@ -206,10 +230,14 @@ const InfoPizzaHandler = {
         attributes.invalidResponse = 2;
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
-        return handlerInput.responseBuilder.speak('How many ' + pizza + ' do you want?').reprompt().getResponse();
+        return handlerInput.responseBuilder.speak(selectAnswer(infoAnswerQuantity,[pizza])).reprompt().getResponse();
 
     }
 };
+
+
+
+/* --- Recap INTENT --- */
 
 const RecapOrderHandler = {
     canHandle(handlerInput) {
@@ -234,13 +262,23 @@ const RecapOrderHandler = {
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
         let recap = getRecapMessage()
-        //recap = JSON.stringify(infoOrder);
         
         return handlerInput.responseBuilder
             .speak('You have ordered: \n '+ recap + ' up to now. Do you want to add anything else?').reprompt()
             .getResponse();
     }
 };
+
+
+
+/* --- BackTopPizza INTENT --- */
+
+const backSubmit = [
+    "Your order has been submitted. Thanks for using Hey Food. See you soon!",
+    "Ok, the order has been received. Thank you for choosing hey food!",
+    "Ok, the order is completed, see you this evening in the pizzeria, bye bye!"
+    ]
+
 
 const BackToThePizzaHandler = {
     canHandle(handlerInput) {
@@ -253,7 +291,7 @@ const BackToThePizzaHandler = {
             attributes.finalConfirmPending = false;
             handlerInput.attributesManager.setSessionAttributes(attributes);
             return handlerInput.responseBuilder
-            .speak('Your order has been submitted. Thanks for using Hey Food. See you soon!')
+            .speak(selectAnswer(backSubmit,[]))
             .getResponse();
         }
         
@@ -263,34 +301,36 @@ const BackToThePizzaHandler = {
             if (typeof attributes.amount !== 'undefined') {
                 const before = ' , before: ' + JSON.stringify(infoOrder) + ' ' + infoOrder.has(attributes.pizza);
                 updateNumberOfPizzas(attributes.pizza, attributes.amount);
-                const after = attributes.amount + ' ' + attributes.pizza +' , after: ' + JSON.stringify(infoOrder);
-                const res = 'You have added ' + attributes.amount + ' ' + attributes.pizza + ' to your order. Do you want to add something else?'
-                
+
+                const answer_params = [attributes.amount, attributes.pizza]
                 attributes.pizza = undefined;
                 attributes.amount = undefined;
                 attributes.invalidResponse = 1;
                 handlerInput.attributesManager.setSessionAttributes(attributes);
                 
                 return handlerInput.responseBuilder
-                    .speak(res).reprompt()
+                    .speak(selectAnswer(infoAnswerAdded,answer_params)).reprompt()
                     .getResponse();
             } else {
                 // Ask for amount
                 attributes.invalidResponse = 2;
                 handlerInput.attributesManager.setSessionAttributes(attributes);
-                return handlerInput.responseBuilder.speak('How many ' + attributes.pizza + ' do you want?').reprompt().getResponse();
+                return handlerInput.responseBuilder.speak(selectAnswer(infoAnswerQuantity,[attributes.pizza])).reprompt().getResponse();
             }
         }
         attributes.invalidResponse = 0;
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
         return handlerInput.responseBuilder
-            //.speak(JSON.stringify(infoOrder) + ' ' + attributes.pizza + ' ' + attributes.amount + ' Which pizza would you like to add?').reprompt()
             .speak('Which pizza would you like to add?').reprompt()
             .getResponse();
     }
     
 };
+
+
+
+/* --- OrderFinished INTENT --- */
 
 const OrderFinishedHandler = {
     canHandle(handlerInput){
@@ -319,7 +359,6 @@ const OrderFinishedHandler = {
             handlerInput.attributesManager.setSessionAttributes(attributes);
     
             return handlerInput.responseBuilder
-                //.speak(JSON.stringify(infoOrder) + ' ' + speakOutput)
                 .speak(speakOutput)
                 .reprompt(speakOutput)
                 .getResponse();
@@ -342,8 +381,6 @@ const OrderFinishedHandler = {
         handlerInput.attributesManager.setSessionAttributes(attributes);
         
         let recap = getRecapMessage();
-        //recap = recap + JSON.stringify(infoOrder) + infoOrder["margherita"] + getRecapMessage(infoOrder);
-  
         
         let total = 0;
         for (const orderedPizza in infoOrder) {
@@ -361,6 +398,11 @@ const OrderFinishedHandler = {
     }
 };
 
+
+
+/* ----------------------------- Other standard INTENT -------------------------------- */
+
+
 const HelpIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -376,6 +418,8 @@ const HelpIntentHandler = {
     }
 };
 
+
+
 const CancelAndStopIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -390,11 +434,9 @@ const CancelAndStopIntentHandler = {
             .getResponse();
     }
 };
-/* *
- * FallbackIntent triggers when a customer says something that doesn’t map to any intents in your skill
- * It must also be defined in the language model (if the locale supports it)
- * This handler can be safely added but will be ingnored in locales that do not support it yet 
- * */
+
+
+
 const FallbackIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -423,11 +465,9 @@ const FallbackIntentHandler = {
             .getResponse();
     }
 };
-/* *
- * SessionEndedRequest notifies that a session was ended. This handler will be triggered when a currently open 
- * session is closed for one of the following reasons: 1) The user says "exit" or "quit". 2) The user does not 
- * respond or says something that does not match an intent defined in your voice model. 3) An error occurs 
- * */
+
+
+
 const SessionEndedRequestHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'SessionEndedRequest';
@@ -438,11 +478,9 @@ const SessionEndedRequestHandler = {
         return handlerInput.responseBuilder.getResponse(); // notice we send an empty response
     }
 };
-/* *
- * The intent reflector is used for interaction model testing and debugging.
- * It will simply repeat the intent the user said. You can create custom handlers for your intents 
- * by defining them above, then also adding them to the request handler chain below 
- * */
+
+
+
 const IntentReflectorHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest';
@@ -453,15 +491,12 @@ const IntentReflectorHandler = {
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
-            //.reprompt('add a reprompt if you want to keep the session open for the user to respond')
             .getResponse();
     }
 };
-/**
- * Generic error handling to capture any syntax or routing errors. If you receive an error
- * stating the request handler chain is not found, you have not implemented a handler for
- * the intent being invoked or included it in the skill builder below 
- * */
+
+
+
 const ErrorHandler = {
     canHandle() {
         return true;
@@ -477,6 +512,11 @@ const ErrorHandler = {
     }
 };
 
+
+
+
+/* ----------------------- UTILITY FUNCTION  ---------------------- */
+
 function getRecapMessage() {
     let order = '';
 
@@ -487,6 +527,8 @@ function getRecapMessage() {
     return order;
 }
 
+
+
 function updateNumberOfPizzas(key, newValue){
     if (key in infoOrder) {
         infoOrder[key] = parseInt(newValue, 10) + infoOrder[key]
@@ -494,6 +536,8 @@ function updateNumberOfPizzas(key, newValue){
         infoOrder[key] = parseInt(newValue);
     }
 }
+
+
 
 function getBestMatches(pizza, k) {
     const availablePizzas = Object.keys(pizzaIngredients)
@@ -503,11 +547,15 @@ function getBestMatches(pizza, k) {
     return availablePizzas.slice(0, n);
 }
 
+
+
 function getBestMatch(pizza) {
     const availablePizzas = Object.keys(pizzaIngredients)
     const matches = stringSimilarity.findBestMatch(pizza, availablePizzas);
     return matches.bestMatch;
 }
+
+
 
 function getMapSize(x) {
     var len = 0;
@@ -518,11 +566,30 @@ function getMapSize(x) {
     return len;
 }
 
-/**
- * This handler acts as the entry point for your skill, routing all request and response
- * payloads to the handlers above. Make sure any new handlers or interceptors you've
- * defined are included below. The order matters - they're processed top to bottom 
- * */
+
+function selectAnswer(answers, params) {
+    
+    var i = Math.floor(Math.random() * answers.length);
+    
+    if (params.length === 0)
+        return(answers[i])
+    
+    var tokens = answers[i].split("***");
+    var finalAnswer = "";
+    
+    for (var idx in tokens) {
+        finalAnswer = finalAnswer + tokens[idx]; 
+        if (idx < params.length && idx < tokens.length-1)
+            finalAnswer = finalAnswer + " " + params[idx] + " ";
+    }
+    
+    return(finalAnswer);
+}
+
+
+/* ------------------------------------------------------------------ */
+
+
 exports.handler = Alexa.SkillBuilders.custom()
     .addRequestHandlers(
         LaunchRequestHandler,
@@ -539,3 +606,4 @@ exports.handler = Alexa.SkillBuilders.custom()
         ErrorHandler)
     .withCustomUserAgent('sample/hello-world/v1.2')
     .lambda();
+    

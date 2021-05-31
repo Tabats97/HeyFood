@@ -1,0 +1,146 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "hey food",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "InfoPizzaHandler",
+          "slots": [
+            {
+              "name": "pizza",
+              "type": "AMAZON.Food"
+            },
+            {
+              "name": "amount",
+              "type": "AMAZON.NUMBER"
+            }
+          ],
+          "samples": [
+            "can you do me {pizza}",
+            "do you have {pizza}",
+            "i want to eat {amount} {pizza}",
+            "i want eat {amount} {pizza}",
+            "i would order {amount} {pizza}",
+            "i want to order {amount} {pizza}",
+            "i would eat {amount} {pizza}",
+            "a {pizza}",
+            "I would like to order {amount} {pizza}",
+            "I would like to order {pizza}",
+            "{amount}",
+            "I want to add {pizza}",
+            "I would like to add {pizza}",
+            "I want to add {amount} {pizza}",
+            "I would like to add {amount} {pizza}",
+            "I want {amount} {pizza}",
+            "{amount} {pizza}",
+            "I would like {amount} {pizza}",
+            "I would like {pizza}",
+            "{pizza}",
+            "I want {pizza}"
+          ]
+        },
+        {
+          "name": "RecapOrder",
+          "slots": [],
+          "samples": [
+            "what have you write down",
+            "recap",
+            "list my order",
+            "what i have ordered",
+            "Recap my order"
+          ]
+        },
+        {
+          "name": "BackToThePizzaHandler",
+          "slots": [],
+          "samples": [
+            "Correct",
+            "Ok",
+            "Okay",
+            "Yeah",
+            "Of course",
+            "Sure",
+            "Yes"
+          ]
+        },
+        {
+          "name": "OrderFinished",
+          "slots": [],
+          "samples": [
+            "Finish",
+            "Stop",
+            "End the order",
+            "End",
+            "No"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "values": [
+            {
+              "name": {
+                "value": "vegetariana"
+              }
+            },
+            {
+              "name": {
+                "value": "crostino"
+              }
+            },
+            {
+              "name": {
+                "value": "napoli"
+              }
+            },
+            {
+              "name": {
+                "value": "capricciosa"
+              }
+            },
+            {
+              "name": {
+                "value": "margherita"
+              }
+            },
+            {
+              "name": {
+                "value": "pepperoni",
+                "synonyms": [
+                  "diavola"
+                ]
+              }
+            }
+          ],
+          "name": "AMAZON.Food"
+        }
+      ],
+      "modelConfiguration": {
+        "fallbackIntentSensitivity": {
+          "level": "HIGH"
+        }
+      }
+    }
+  },
+  "version": "65"
+}
