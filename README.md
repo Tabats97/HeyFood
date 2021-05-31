@@ -5,15 +5,15 @@ A simple Alexa food ordering skill developed using Node.js. To use it, create an
 ## Project structure
 
     .
-    ├── ...
+    ├── skill/                   # Alexa skill source code
     ├── report/                  # Report directory
     │   ├── HEY FOOD MENU.pdf    # Example of a restaurant menu
     │   ├── hey_food.pdf         # Actual project report
-    │   └── hey_food.tex
-    │   └── images/
+    │   ├── hey_food.tex
+    │   ├── images/
     │   └── modules/
-    ├── README.md
-    ├── skill/                   # Alexa skill source code
+    └── README.md
+
     
 ### Contributors (alfabetical order)
 
